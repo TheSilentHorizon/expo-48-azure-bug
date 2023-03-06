@@ -1,0 +1,39 @@
+# Node.js with React
+# Build a Node.js project that uses React.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+- main
+
+pool:
+  name: Agent
+  vmImage: ubuntu-latest
+
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '19.x'
+  displayName: 'Install Node.js'
+
+# Install Expo so we can use it.
+
+- task: Npm@1
+  inputs:
+    command: 'custom'
+    customCommand: 'install --cache $(npm_config_cache) --prefer-offline -g expo expo-cli eas-cli'
+  displayName: 'Install Expo / EAS Cli'
+
+# Login to expo cli using the parameters we setup.
+
+- script: |
+    set -x
+    expo login -u $(SHARED_EXPO_USERNAME) -p $(SHARED_EXPO_PASSWORD) --non-interactive
+  displayName: Login to Expo Cli
+
+# Build APK and IOS Application
+
+- script:
+    npx eas-cli build --platform all --non-interactive
+  displayName: 'Build APK / IOS Application'
